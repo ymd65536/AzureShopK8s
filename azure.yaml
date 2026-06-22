@@ -1,0 +1,16 @@
+name: azure-shop-k8s
+metadata:
+  template: azure-shop-k8s@0.0.1-beta
+services:
+  api:
+    project: ./src/AzureShop.Api
+    host: containerapp
+    language: dotnet
+    docker:
+      path: ../../Dockerfile.api
+  web:
+    project: ./src/AzureShop.Web
+    host: containerapp
+    language: dotnet
+    docker:
+      path: ../../Dockerfile.web

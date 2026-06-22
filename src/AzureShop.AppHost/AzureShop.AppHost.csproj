@@ -1,0 +1,16 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.2">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>a6c7bb53-a492-48f0-9c5d-3c4e98531029</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AzureShop.Api\AzureShop.Api.csproj" />
+    <ProjectReference Include="..\AzureShop.Web\AzureShop.Web.csproj" />
+  </ItemGroup>
+
+</Project>

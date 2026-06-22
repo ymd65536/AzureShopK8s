@@ -1,0 +1,78 @@
+﻿@page "/"
+
+<PageTitle>Azure Shop</PageTitle>
+
+<div class="container py-4">
+    <h1 class="display-6">Azure Shop</h1>
+    <p class="lead">A simple shopping experience running on Azure Kubernetes Service.</p>
+
+    <div class="row g-4 mt-3">
+        @foreach (var product in products)
+        {
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@product.Name</h5>
+                        <p class="card-text">@product.Description</p>
+                        <p class="fw-bold">$@product.Price</p>
+                        <button class="btn btn-primary" @onclick="() => AddToCart(product)">Add to cart</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="mt-5">
+        <h2>Your cart</h2>
+        @if (cartItems.Count == 0)
+        {
+            <p class="text-muted">Your cart is empty.</p>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var item in cartItems)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@item.Name</span>
+                        <span>$@item.Price</span>
+                    </li>
+                }
+            </ul>
+            <button class="btn btn-success mt-3" @onclick="Checkout">Confirm order</button>
+        }
+    </div>
+
+    @if (showConfirmation)
+    {
+        <div class="alert alert-success mt-4" role="alert">
+            Order confirmed. Your Azure Shop purchase is being processed.
+        </div>
+    }
+</div>
+
+@code {
+    private List<ProductItem> products = new()
+    {
+        new("Azure Mug", "A ceramic mug with the Azure cloud logo.", 19.99m),
+        new("AKS Hoodie", "Comfortable hoodie for your Kubernetes team.", 49.50m),
+        new("Monitor Bundle", "A complete starter bundle for observability.", 129.00m)
+    };
+
+    private List<ProductItem> cartItems = new();
+    private bool showConfirmation;
+
+    private void AddToCart(ProductItem product)
+    {
+        cartItems.Add(product);
+        showConfirmation = false;
+    }
+
+    private void Checkout()
+    {
+        showConfirmation = cartItems.Count > 0;
+        cartItems.Clear();
+    }
+
+    private record ProductItem(string Name, string Description, decimal Price);
+}

@@ -1,0 +1,16 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+WORKDIR /app
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY ["src/AzureShop.Web/AzureShop.Web.csproj", "src/AzureShop.Web/"]
+RUN dotnet restore "src/AzureShop.Web/AzureShop.Web.csproj"
+COPY . .
+WORKDIR /src/src/AzureShop.Web
+RUN dotnet publish "AzureShop.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM nginx:alpine AS final
+COPY --from=build /app/publish/wwwroot /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
