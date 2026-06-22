@@ -132,9 +132,20 @@ az account list
 
 ## このリポジトリのデプロイ手順
 
-以下の手順で、ローカル環境からこのリポジトリを Azure 上の AKS にデプロイできます。
+このリポジトリは、ローカル環境から Azure 上の AKS にアプリをデプロイする流れで構成されています。初回デプロイと、既存デプロイの更新では手順が少し異なります。
 
-### 1. 変数を設定する
+### 1. 前提条件
+
+以下のツールが利用可能であることを確認します。
+
+```bash
+az version
+azd version
+docker --version
+kubectl version --client
+```
+
+### 2. 変数を設定する
 
 ```bash
 RESOURCE_GROUP=rg-azure-shop-k8s
@@ -143,7 +154,14 @@ ACR_NAME=acrazureshopk8s2833
 AKS_NAME=aks-azure-shop-k8s
 ```
 
-### 2. Azure リソースを作成する
+### 3. Azure にログインする
+
+```bash
+az login
+az account set --subscription <SUBSCRIPTION_ID>
+```
+
+### 4. 初回デプロイ: Azure リソースを作成する
 
 ```bash
 az group create --name $RESOURCE_GROUP --location $LOCATION
@@ -157,14 +175,14 @@ az aks create \
   --generate-ssh-keys
 ```
 
-### 3. AKS に接続する
+### 5. AKS に接続する
 
 ```bash
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_NAME
 kubectl get nodes
 ```
 
-### 4. コンテナイメージを作成して ACR に push する
+### 6. コンテナイメージを作成して ACR に push する
 
 ```bash
 az acr login --name $ACR_NAME
@@ -176,33 +194,52 @@ docker build -t $ACR_NAME.azurecr.io/azure-shop-web:latest -f Dockerfile.web .
 docker push $ACR_NAME.azurecr.io/azure-shop-web:latest
 ```
 
-### 5. Kubernetes マニフェストを適用する
+### 7. Kubernetes にデプロイする
 
 ```bash
 kubectl apply -f k8s/api-deployment.yaml
 kubectl apply -f k8s/web-deployment.yaml
 ```
 
-### 6. デプロイ結果を確認する
+### 8. デプロイ結果を確認する
 
 ```bash
 kubectl get pods
 kubectl get svc
 ```
 
-Web アプリの外部 IP が割り当てられたら、以下のようにアクセス確認できます。
+Web アプリの外部 IP が割り当てられたら、以下でアクセス確認できます。
 
 ```bash
 kubectl get svc azure-shop-web
 curl http://<EXTERNAL_IP>
 ```
 
-### 7. API も確認する
+API も確認する場合は、次を実行します。
 
 ```bash
 kubectl port-forward svc/azure-shop-api 8081:80
 curl http://127.0.0.1:8081/health
 curl http://127.0.0.1:8081/api/products
+```
+
+### 9. 既存デプロイの更新時
+
+コードを変更したあとに再デプロイする場合は、イメージを再ビルドして Kubernetes に反映します。
+
+```bash
+az acr login --name $ACR_NAME
+
+docker build -t $ACR_NAME.azurecr.io/azure-shop-api:latest -f Dockerfile.api .
+docker push $ACR_NAME.azurecr.io/azure-shop-api:latest
+
+docker build -t $ACR_NAME.azurecr.io/azure-shop-web:latest -f Dockerfile.web .
+docker push $ACR_NAME.azurecr.io/azure-shop-web:latest
+
+kubectl set image deployment/azure-shop-api azure-shop-api=$ACR_NAME.azurecr.io/azure-shop-api:latest
+kubectl set image deployment/azure-shop-web web=$ACR_NAME.azurecr.io/azure-shop-web:latest
+kubectl rollout status deployment/azure-shop-api
+kubectl rollout status deployment/azure-shop-web
 ```
 
 ## ローカル開発で Aspire から起動する
