@@ -268,6 +268,17 @@ dotnet publish src/AzureShop.Web/AzureShop.Web.csproj -c Release
 dotnet run --project src/AzureShop.Web/AzureShop.Web.csproj
 ```
 
+## kubectl のコンテキストを戻す方法
+
+AKS に接続した状態で `kubectl get pods` を実行すると、Azure の AKS クラスターを見に行きます。ローカルの Kubernetes に戻したい場合は、コンテキストを切り替えます。
+
+```bash
+kubectl config get-contexts
+kubectl config use-context rancher-desktop
+```
+
+`rancher-desktop` ではなく別名のコンテキストを使っている場合は、その名前に置き換えて実行してください。
+
 ## GitHub Codespacesの設定
 
 `.env`でシークレットを管理する場合、以下のコマンドでCodespacesにシークレットを設定します。
